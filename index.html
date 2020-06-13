@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Social Distancing Zones</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-hash/0.2.1/leaflet-hash.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/gokertanrisever/leaflet-ruler/master/src/leaflet-ruler.css">
+    <script src="https://cdn.rawgit.com/gokertanrisever/leaflet-ruler/master/src/leaflet-ruler.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        #export {
+            position: absolute;
+            top: 60px;
+            right:10px;
+            z-index:500;
+            background:black;
+            color:white;
+            padding:10px;
+            border-radius:5px;
+            font-family: 'Helvetica Neue';
+            cursor: pointer;
+            font-size:12px;
+            text-decoration:none;
+        }
+    </style>
+</head>
+<body>
+    <div id="map" style="">
+      <a href='#' id='export'>Save Shapes</a>  
+    </div>
+<script>
+    document.getElementById('export').onclick = function(e) {
+        // Extract GeoJson from featureGroup
+        //var data = featureGroup.toGeoJSON();
+        var data = generateGeoJson();
+
+        // Stringify the GeoJson
+        var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
+
+        // Create export
+        document.getElementById('export').setAttribute('href', 'data:' + convertedData);
+        document.getElementById('export').setAttribute('download','shapes.geojson');
+    }
+
+    function generateGeoJson(){
+        var fg = L.featureGroup();    
+        var layers = findLayers(map);
+        layers.forEach(function(layer){
+        fg.addLayer(layer);
+         });
+
+        console.log(fg.toGeoJSON());
+
+        return fg.toGeoJSON();
+    }
+
+    function findLayers(map) {
+        var layers = [];
+        map.eachLayer(layer => {
+          if (
+            layer instanceof L.Polyline || //Don't worry about Polygon and Rectangle they are included in Polyline
+            layer instanceof L.Marker ||
+            layer instanceof L.Circle ||
+            layer instanceof L.CircleMarker
+          ) {
+            layers.push(layer);
+          }
+        });
+
+        // filter out layers that don't have the leaflet-geoman instance
+        layers = layers.filter(layer => !!layer.pm);
+
+        // filter out everything that's leaflet-geoman specific temporary stuff
+        layers = layers.filter(layer => !layer._pmTempLayer);
+
+        return layers;
+    }
+
+    var map = L.map('map', {
+        center: [42.36116,-71.05172],
+        zoom: 19,
+        scrollWheelZoom: false,
+        attributionControl: false
+    });
+
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmV3dXJiYW5tZWNocyIsImEiOiJja2JiamtmcHEwMXpiMnJwcmJqMnZtcm0wIn0.d3fLu06Sb9axgVKWKNpdfA', {
+        maxZoom: 22,
+        id: 'mapbox/satellite-v9'
+    }).addTo(map);
+
+    map.pm.addControls({
+        position: 'topleft'
+    });
+
+    var options = {
+          position: 'topright',
+          lengthUnit: {
+            factor: 3280.84,    //  from km to ft
+            display: 'Feet',
+            decimal: 3
+          }
+        };
+
+    L.control.ruler(options).addTo(map);
+
+    var hash = new L.Hash(map);
+
+    map.on('pm:create', e => {
+        //console.log(e);
+        generateGeoJson();
+    });
+
+    map.pm.setPathOptions({
+        color: 'blue',
+        radius: 6,
+        fillColor: 'white',
+        fillOpacity: 0.4,
+    });
+</script>
+
+</body>
+</html>
