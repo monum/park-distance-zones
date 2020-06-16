@@ -45,14 +45,10 @@
     </div>
 <script>
     document.getElementById('export').onclick = function(e) {
-        // Extract GeoJson from featureGroup
-        //var data = featureGroup.toGeoJSON();
         var data = generateGeoJson();
 
-        // Stringify the GeoJson
         var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
 
-        // Create export
         document.getElementById('export').setAttribute('href', 'data:' + convertedData);
         document.getElementById('export').setAttribute('download','shapes.geojson');
     }
@@ -64,8 +60,6 @@
         fg.addLayer(layer);
          });
 
-        console.log(fg.toGeoJSON());
-
         return fg.toGeoJSON();
     }
 
@@ -73,7 +67,7 @@
         var layers = [];
         map.eachLayer(layer => {
           if (
-            layer instanceof L.Polyline || //Don't worry about Polygon and Rectangle they are included in Polyline
+            layer instanceof L.Polyline ||
             layer instanceof L.Marker ||
             layer instanceof L.Circle ||
             layer instanceof L.CircleMarker
@@ -82,10 +76,8 @@
           }
         });
 
-        // filter out layers that don't have the leaflet-geoman instance
         layers = layers.filter(layer => !!layer.pm);
 
-        // filter out everything that's leaflet-geoman specific temporary stuff
         layers = layers.filter(layer => !layer._pmTempLayer);
 
         return layers;
@@ -110,7 +102,7 @@
     var options = {
           position: 'topright',
           lengthUnit: {
-            factor: 3280.84,    //  from km to ft
+            factor: 3280.84,    //km to ft
             display: 'Feet',
             decimal: 3
           }
