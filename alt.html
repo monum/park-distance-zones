@@ -45,14 +45,11 @@
     </div>
 <script>
     document.getElementById('export').onclick = function(e) {
-        // Extract GeoJson from featureGroup
         var data = drawnItems.toGeoJSON();
         //var data = generateGeoJson();
 
-        // Stringify the GeoJson
         var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
 
-        // Create export
         document.getElementById('export').setAttribute('href', 'data:' + convertedData);
         document.getElementById('export').setAttribute('download','shapes.geojson');
     }
@@ -72,7 +69,7 @@
     var options = {
           position: 'topright',
           lengthUnit: {
-            factor: 3280.84,    //  from km to ft
+            factor: 3280.84,    //km to ft
             display: 'Feet',
             decimal: 3
           }
@@ -102,33 +99,29 @@
         }
     }));
 
-    // Truncate value based on number of decimals
     var _round = function(num, len) {
         return Math.round(num*(Math.pow(10, len)))/(Math.pow(10, len));
     };
-    // Helper method to format LatLng object (x.xxxxxx, y.yyyyyy)
+
     var strLatLng = function(latlng) {
         return "("+_round(latlng.lat, 6)+", "+_round(latlng.lng, 6)+")";
     };
 
-    // Generate popup content based on layer type
-    // - Returns HTML string, or null if unknown object
     var getPopupContent = function(layer) {
-        // Marker - add lat/long
         if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
             return strLatLng(layer.getLatLng());
-        // Circle - lat/long, radius
+
         } else if (layer instanceof L.Circle) {
             var center = layer.getLatLng(),
                 radius = layer.getRadius();
             return "Center: "+strLatLng(center)+"<br />"
                   +"Radius: "+_round(radius, 2)+" m";
-        // Rectangle/Polygon - area
+
         } else if (layer instanceof L.Polygon) {
             var latlngs = layer._defaultShape ? layer._defaultShape() : layer.getLatLngs(),
                 area = L.GeometryUtil.geodesicArea(latlngs);
             return "Area: "+L.GeometryUtil.readableArea(area, true);
-        // Polyline - distance
+
         } else if (layer instanceof L.Polyline) {
             var latlngs = layer._defaultShape ? layer._defaultShape() : layer.getLatLngs(),
                 distance = 0;
@@ -144,7 +137,6 @@
         return null;
     };
 
-    // Object created - bind popup to layer, add to feature group
     map.on(L.Draw.Event.CREATED, function(event) {
         var layer = event.layer;
         var content = getPopupContent(layer);
@@ -154,7 +146,6 @@
         drawnItems.addLayer(layer);
     });
 
-    // Object(s) edited - update popups
     map.on(L.Draw.Event.EDITED, function(event) {
         var layers = event.layers,
             content = null;
@@ -167,8 +158,6 @@
     });
 
     map.on('draw:created', function(e) {
-
-        // Each time a feaute is created, it's added to the over arching feature group
         drawnItems.addLayer(e.layer);
     });
 </script>
