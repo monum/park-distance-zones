@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "Edges",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Name": "Distance Zone", "description": null }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -71.0690201, 42.3560653 ], [ -71.068194, 42.3546263 ], [ -71.0680491, 42.3546699 ], [ -71.0675342, 42.3552527 ], [ -71.0675771, 42.3564181 ], [ -71.0690201, 42.3560653 ] ] ] } }
+]
+}
